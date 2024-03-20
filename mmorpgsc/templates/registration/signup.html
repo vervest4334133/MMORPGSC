@@ -1,30 +1,20 @@
 {% extends "flatpages/default.html" %}
-{% load crispy_forms_tags %}
-{% load static %}
 
+
+{% block title %}
+MMORPGSC
+{% endblock title %}
 
 {% block content %}
 {% if not user.is_authenticated %}
 <div class="container">
 <h1 class="text-center">Регистрация</h1>
     <div class="col-lg-6 col-lg-offset-3">
-        <form method="post" action="{% url 'register' %}">
-            {% csrf_token %}
-            {% for field in form %}
-            <p>
-              {{ field.label_tag }}<br>
-                {% for error in field.errors %}
-                    <p class="register-error">{{ error }}</p>
-              {% endfor %}
-              {{ field }}
-              {% if field.help_text %}
-              <span class="help-text-register">{{ field.help_text }}</span>
-              {% endif %}
-
-            </p>
-            {% endfor %}
-            <button type="submit" class="btn btn-success">Зарегистрироваться</button>
-        </form>
+        <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Зарегистрироваться</button>
+    </form>
     </div>
 </div>
 {% else %}
