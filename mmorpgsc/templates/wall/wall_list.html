@@ -1,0 +1,70 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% block title %}
+MMORPGSC
+{% endblock title %}
+
+
+{% block content %}
+<h1>MMORPG Social Community</h1>
+<h5>{{ time_now|date:'M d Y D' }}</h5>
+
+<form action="" method="get">
+       {{ filterset.form.as_p }}
+       <input type="submit" value="Найти" />
+</form>
+
+<hr>
+
+{% if perms.wall.wall_post_create %}
+    <a href="{% url 'post_create' %}">Добавить пост.</a>
+{% endif %}
+
+
+<ul class="list-group list-group-flush">
+    {% if posts %}
+           {% for post in posts %}
+           <li class="list-group-item">
+               <small class="fw-bold">{{ post.time_of_creation|date:'M d Y D H:i' }}</small>
+               <a href="{% url 'post_detail' post.id%}">{{ post.name }}</a>
+               <small class="text-muted">автор: {{post.author}} </small> <br>
+               <small class="fw-bold">категория:
+                   {{ post.get_category_display }}
+               </small>
+               {% if post.author == request.user %}
+                   {% if perms.wall.wall_post_update or perms.wall.wall_post_delete %}
+                       <a href="{% url 'post_update' wall_detailed.id %}">Изменить пост.</a>
+                       <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
+                   {% endif %}
+               {% endif %}
+               <p>{{ post.content|truncatewords:20 }}</p>
+           </li>
+           {% endfor %}
+    {% else %}
+       <h2>Публикаций нет!</h2>
+    {% endif %}
+</ul>
+
+
+
+   {% if page_obj.has_previous %}
+       <a href="?page=1">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {{ page_obj.number }}
+
+   {% if page_obj.has_next %}
+       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+
+
+{% endblock content %}

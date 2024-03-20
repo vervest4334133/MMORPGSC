@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MMORPGSC</title>
+<style>
+body {background-color: {% if current_time.hour >= 19 or current_time.hour <= 7 %} darkcyan {% else %} powderblue {% endif %};}
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+
+{% block content %}
+{{ flatpage.content }}
+{% endblock content %}
+
+            </div>
+        </div>
+</div>
+
+<p> </p>
+<center><p><h7>2024</h7></p></center>
+
+</body>
+</html>

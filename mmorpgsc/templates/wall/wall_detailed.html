@@ -1,0 +1,53 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% block title %}
+MMORPGSC
+{% endblock title %}
+
+
+{% block content %}
+<h1> Only one single publication on site MMORPG Social Community</h1>
+<hr>
+   {% if wall_detailed %}
+
+               <h1>{{ wall_detailed.name }}</h1>
+               {% if wall_detailed.author == request.user %}
+                   {% if perms.wall.wall_post_update or perms.wall.wall_post_delete %}
+                       <a href="{% url 'post_update' wall_detailed.id %}">Изменить пост.</a>
+                       <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
+                   {% endif %}
+               {% endif %}
+               <h2>{{wall_detailed.content}}</h2>
+               <h6>{{ wall_detailed.time_of_creation|date:'M d Y D H:i' }}</h6>
+
+               <hr>
+               {% if perms.wall.reply_create%}
+               <h4>Оставить отклик на публикацию:</h4>
+               <form action="{% url 'reply_create' wall_detailed.id %}" method="post">
+                   {% csrf_token %}
+                   {{ form.as_p }}
+                   <input type="submit" value="Оставить отклик" />
+               </form>
+               {% endif %}
+
+               <h4>Все отклики на публикацию:</h4>
+               {% if replies %}
+                   {% for reply in replies %}
+                   <small class="fw-bold">Пользователь {{ reply.user }} оставил отклик:  </small>
+                   <small class="fw-bold">"{{ reply.reply_text }}"</small><br>
+                   <small class="text-muted">Дата: {{ reply.reply_date }} </small><br>
+                   <br>
+                   <br>
+                   {% endfor %}
+               {% else %}
+                    <h6>Откликов нет!</h6>
+               {% endif %}
+
+   {% else %}
+       <h2>Публикация отсутствует!</h2>
+   {% endif %}
+
+<hr>
+
+{% endblock content %}

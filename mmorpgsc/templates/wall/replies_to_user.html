@@ -1,0 +1,92 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% block title %}
+MMORPGSC
+{% endblock title %}
+
+{% block content %}
+
+<h1>MMORPG Social Community</h1>
+<h5>{{ time_now|date:'M d Y D' }}</h5>
+<h2>Отклики на ваши публикации</h2>
+
+<hr>
+
+    <form method="GET" action="{% url 'profile' %}">
+        <label for="post_id">Поиск по вашим публикациям:</label>
+        <select name="post_id" id="post_id">
+            <option value="">Все публикации</option>
+            {% for post in posts %}
+                <option value="{{ post.id }}"
+                        {% if post.id == request.GET.post_id %} selected {% endif %}> {{ post.name }}
+                </option>
+                <p>Публикация: {{ response.post.name }}</p>
+            {% endfor %}
+
+        </select>
+        <button type="submit">Поиск</button>
+    </form>
+
+<hr>
+
+<ul class="list-group list-group-flush">
+    {% if replies %}
+           {% for rp in replies %}
+           <li class="list-group-item">
+               <p>На публикацию <a href="{% url 'post_detail' post.id%}">{{ rp.post.name }}</a> пришёл отклик!</p>
+               <small class="fw-bold">категория: {{ rp.post.get_category_display }} </small>
+               <p>{{ rp.post.content|truncatewords:8 }}</p>
+               <small class="fw-bold">{{ rp.reply_date|date:'M d Y D H:i' }}</small>
+
+               <small class="fw-bold">Автор отклика: {{ rp.user }} </small>
+               <small class="fw-bold">Содержание отклика: {{ rp.reply_text }} </small>
+
+               {% if reply.confirm == 'confirmed' %}
+                    <p style="color: green"><b>Отклик принят</b></p>
+               {% elif reply.confirm == 'not_confirmed' %}
+                    <p style="color: red"><b>Отклик отклонен</b></p>
+               {% elif reply.confirm == 'null' %}
+                    <p style="color: gray"><b>Отклик на рассмотрении</b></p>
+               {% endif %}
+
+               <hr>
+
+               {% if reply.confirm == 'null' %}
+                <form method="post" action="{% url 'reply_confirm' rp.id 'confirm' %}">
+                    {% csrf_token %}
+                    <button type="submit">Принять отклик</button>
+                </form>
+
+                <form method="post" action="{% url 'reply_confirm' rp.id 'not_confirm' %}">
+                    {% csrf_token %}
+                    <button type="submit">Отклонить отклик</button>
+                </form>
+               {% endif %}
+           </li>
+           {% endfor %}
+    {% else %}
+       <h2>Откликов нет!</h2>
+    {% endif %}
+</ul>
+
+
+{% if page_obj.has_previous %}
+    <a href="?page=1">1</a>
+    {% if page_obj.previous_page_number != 1 %}
+       ...
+    <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+    {% endif %}
+{% endif %}
+
+   {{ page_obj.number }}
+
+{% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+    {% if paginator.num_pages != page_obj.next_page_number %}
+       ...
+    <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+    {% endif %}
+{% endif %}
+
+{% endblock content %}

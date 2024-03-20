@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MMORPGSC</title>
+<style>
+body {background-color: {% if current_time.hour >= 19 or current_time.hour <= 7 %} darkcyan {% else %} powderblue {% endif %};}
+</style>
+</head>
+<body>
+<h1>MMORPG Social Community</h1>
+<h2>Контент стартовой страницы:</h2>
+<a href="http://127.0.0.1:8000/wall/">Страница с публикациями</a><br>
+<br>
+<a href="http://127.0.0.1:8000/admin/">Одмен</a><br>
+<br>
+<a href="http://127.0.0.1:8000/accounts/login/">Войти</a><br>
+<br>
+<a href="http://127.0.0.1:8000/accounts/logout/">Выйти</a><br>
+<br>
+<a href="http://127.0.0.1:8000/accounts/signup/">Регистрация</a><br>
+<br>
+</body>
+</html>

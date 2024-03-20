@@ -1,0 +1,10 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}Logged out{% endblock %}
+{% block content %}
+<a href="http://127.0.0.1:8000">Return to startpage.</a><br>
+    <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">logout</button>
+</form>
+{% endblock %}
