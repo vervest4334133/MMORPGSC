@@ -43,17 +43,17 @@ class Post(models.Model):
 
 
 class Reply(models.Model):
+
+    CONFIRM_CHOICES = [
+        ('unknown', 'На рассмотрении'),
+        ('confirmed', 'Принят'),
+        ('cancelled', 'Отклонен')]
+
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     reply_text = models.TextField()
     reply_date = models.DateTimeField(auto_now_add=True)
-
-    CONFIRMATION = [
-        ('null', 'На рассмотрении'),
-        ('confirmed', 'Принят'),
-        ('not_confirmed', 'Отклонен')]
-
-    confirm = models.CharField(max_length=16, choices=CONFIRMATION, default='null')
+    confirm = models.CharField(max_length=16, choices=CONFIRM_CHOICES, default='unknown')
 
     def __str__(self):
         return self.reply_text

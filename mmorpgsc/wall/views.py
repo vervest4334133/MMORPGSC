@@ -1,8 +1,9 @@
 from datetime import datetime
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http import HttpResponse, HttpResponseBadRequest, request
@@ -40,7 +41,7 @@ class PostList(ListView):
         return context
 
 
-class ReplyCreate(CreateView):
+class ReplyCreate(CreateView, LoginRequiredMixin):
     raise_exception = True
     form_class = ReplyForm
     model = Reply
@@ -77,7 +78,7 @@ class PostDetails(DetailView, ReplyCreate):
 
 
 class PostCreate(PermissionRequiredMixin, CreateView):
-    permission_required = ('wall.post_create',)
+    permission_required = ('wall.add_post',)
     raise_exception = True
     form_class = PostForm
     model = Post
@@ -94,7 +95,7 @@ class PostCreate(PermissionRequiredMixin, CreateView):
 
 
 class PostUpdate(PermissionRequiredMixin, UpdateView):
-    permission_required = ('wall.post_update',)
+    permission_required = ('wall.change_post',)
     raise_exception = True
     form_class = PostForm
     model = Post
@@ -109,7 +110,7 @@ class PostUpdate(PermissionRequiredMixin, UpdateView):
 
 
 class PostDelete(PermissionRequiredMixin, DeleteView):
-    permission_required = ('wall.post_delete',)
+    permission_required = ('wall.delete_post',)
     raise_exception = True
     model = Post
     template_name = 'wall/wall_post_delete.html'
@@ -136,55 +137,108 @@ def reply_list(request):
         replies = replies.filter(post_id=selected_post_id)
 
     return render(request, 'wall/replies_to_user.html', {'posts': posts, 'replies': replies})
+
+
+# @login_required
+# def reply_confirm(request, reply_id, action):
+#     reply = get_object_or_404(Reply, id=reply_id)
+#     if action == 'confirm':
+#         reply.confirm = 'confirmed'
+#         subject = 'Ваш отклик принят автором объявления.'
+#         message = f'Ваш отклик на объявление "{reply.post.name}" принят!'
+#         html = (
+#             f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" принят!'
+#             f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
+#         )
+#     elif action == 'cancel':
+#         reply.status = 'cancelled'
+#         subject = 'Ваш отклик отклонен автором объявления.'
+#         message = f'Ваш отклик на объявление "{reply.post.name}" отклонен!'
+#         html = (
+#             f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" отклонен!'
+#             f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
+#         )
+#     else:
+#         return HttpResponseBadRequest('Неправильный запрос!')
 #
+#     reply.save()
 #
-# class ReplyList(ListView, LoginRequiredMixin):
-#     model = Reply
-#     ordering = '-reply_date'
-#     template_name = 'wall/replies_to_user.html'
-#     # context_object_name = 'replies'
-#     paginate_by = 10
+#     msg = EmailMultiAlternatives(
+#         subject=subject, body=message, from_email=None, to=[request.user.email]
+#     )
+#     msg.attach_alternative(html, "text/html")
+#     msg.send()
 #
-#     def selected_post(self, request):
-#         selected_post_id = request.GET.get('post_id')
-#
-#
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         posts = Post.objects.filter(author=self.request.user)
-#
-#         replies_not_filtrated = Reply.objects.filter(post__in=posts)
-#         context['posts'] = Post.objects.filter(author=self.request.user)
-#         if selected_post_id:
-#             context['replies'] = replies_not_filtrated.filter(post_id=selected_post_id)
-#
-#         return context
+#     return redirect('post', post_id=reply.post.id)
 
 
 @login_required
-def reply_confirm(request, reply_id, action):
+def confirm_reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
-    if action == 'confirm':
-        reply.confirm = 'confirmed'
-        subject = 'Ваш отклик принят автором объявления.'
-        message = f'Ваш отклик на объявление "{reply.post.name}" принят!'
-        html = (
-            f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" принят!'
-            f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
-        )
-    elif action == 'not_confirm':
-        reply.status = 'not_confirmed'
-        subject = 'Ваш отклик отклонен автором объявления.'
-        message = f'Ваш отклик на объявление "{reply.post.name}" отклонен!'
-        html = (
-            f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" отклонен!'
-            f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
-        )
-    else:
-        return HttpResponseBadRequest('Неправильный запрос!')
 
+    if request.user != reply.post.author:
+        messages.error(request, 'Недостаточно прав для выполнения этого действия.')
+        return redirect('replies_to_user')
+
+    if reply.confirm != 'unknown':
+        messages.error(request, 'Этот запрос уже обработан.')
+        return redirect('replies_to_user')
+
+    reply.confirm = 'confirmed'
     reply.save()
+
+    # subject = f'Ваш запрос принят'
+    # message = f'Ваш запрос на объявление "{reply.post.name}" был принят.'
+    # from_email = settings.DEFAULT_FROM_EMAIL
+    # recipient_list = [reply.author.email]
+    #
+    # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+    #
+    # messages.success(request, 'Запрос успешно принят.')
+    subject = 'Ваш отклик принят автором объявления.'
+    message = f'Ваш отклик на объявление "{reply.post.name}" принят!'
+    html = (
+        f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" принят!'
+        f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
+    )
+    msg = EmailMultiAlternatives(
+        subject=subject, body=message, from_email=None, to=[request.user.email]
+    )
+    msg.attach_alternative(html, "text/html")
+    msg.send()
+
+    return redirect('replies_to_user')
+
+
+@login_required
+def cancel_reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+
+    if request.user != reply.post.author:
+        messages.error(request, 'Недостаточно прав для выполнения этого действия.')
+        return redirect('replies_to_user')
+
+    if reply.confirm != 'unknown':
+        messages.error(request, 'Этот запрос уже обработан.')
+        return redirect('replies_to_user')
+
+    reply.confirm = 'cancelled'
+    reply.save()
+
+    # subject = f'Ваш запрос отклонен'
+    # message = f'Ваш запрос на объявление "{reply.post.name}" был отклонен.'
+    # from_email = settings.DEFAULT_FROM_EMAIL
+    # recipient_list = [reply.author.email]
+    #
+    # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+    #
+    # messages.success(request, 'Запрос успешно отклонен.')
+    subject = 'Ваш отклик отклонен автором объявления.'
+    message = f'Ваш отклик на объявление "{reply.post.name}" отклонен!'
+    html = (
+        f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" отклонен!'
+        f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
+    )
 
     msg = EmailMultiAlternatives(
         subject=subject, body=message, from_email=None, to=[request.user.email]
@@ -192,4 +246,4 @@ def reply_confirm(request, reply_id, action):
     msg.attach_alternative(html, "text/html")
     msg.send()
 
-    return redirect('post', post_id=reply.post.id)
+    return redirect('replies_to_user')

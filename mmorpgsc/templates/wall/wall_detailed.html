@@ -13,16 +13,16 @@ MMORPGSC
 
                <h1>{{ wall_detailed.name }}</h1>
                {% if wall_detailed.author == request.user %}
-                   {% if perms.wall.wall_post_update or perms.wall.wall_post_delete %}
+                   {% if perms.wall.change_post or perms.wall.delete_post %}
                        <a href="{% url 'post_update' wall_detailed.id %}">Изменить пост.</a>
                        <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
                    {% endif %}
                {% endif %}
-               <h2>{{wall_detailed.content|safe}}</h2>
+               <h2>{{ wall_detailed.content|safe }}</h2>
                <h6>{{ wall_detailed.time_of_creation|date:'M d Y D H:i' }}</h6>
 
                <hr>
-               {% if perms.wall.reply_create%}
+               {% if perms.wall.add_reply%}
                <h4>Оставить отклик на публикацию:</h4>
                <form action="{% url 'reply_create' wall_detailed.id %}" method="post">
                    {% csrf_token %}

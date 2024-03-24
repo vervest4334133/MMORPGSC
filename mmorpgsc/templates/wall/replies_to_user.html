@@ -34,35 +34,37 @@ MMORPGSC
     {% if replies %}
            {% for rp in replies %}
            <li class="list-group-item">
-               <p>На публикацию <a href="{% url 'post_detail' rp.post.id%}">{{ rp.post.name }}</a> пришёл отклик!</p>
+               <p>На публикацию <a href="{% url 'post_detail' rp.post.id %}">{{ rp.post.name }}</a> пришёл отклик!</p>
                <small class="fw-bold">категория: {{ rp.post.get_category_display }} </small>
-               <p>{{ rp.post.content|truncatewords:8 }}</p>
+               <p>{{ rp.post.content|truncatewords:8|safe }}</p>
                <small class="fw-bold">{{ rp.reply_date|date:'M d Y D H:i' }}</small>
 
                <small class="fw-bold">Автор отклика: {{ rp.user }} </small>
                <small class="fw-bold">Содержание отклика: {{ rp.reply_text }} </small>
 
-               {% if reply.confirm == 'confirmed' %}
+               {% if rp.confirm == 'confirmed' %}
                     <p style="color: green"><b>Отклик принят</b></p>
-               {% elif reply.confirm == 'not_confirmed' %}
+               {% elif rp.confirm == 'cancelled' %}
                     <p style="color: red"><b>Отклик отклонен</b></p>
-               {% elif reply.confirm == 'null' %}
+               {% else %}
                     <p style="color: gray"><b>Отклик на рассмотрении</b></p>
                {% endif %}
 
                <hr>
 
-               {% if reply.confirm == 'null' %}
-                <form method="post" action="{% url 'reply_confirm' rp.id 'confirm' %}">
+               {% if rp.confirm == 'unknown' %}
+               <div style="display: flex; gap: 10px; justify-content: center;">
+                <form method="post" action="{% url 'confirm_reply' rp.id %}">
                     {% csrf_token %}
                     <button type="submit">Принять отклик</button>
                 </form>
-
-                <form method="post" action="{% url 'reply_confirm' rp.id 'not_confirm' %}">
+                <form method="post" action="{% url 'cancel_reply' rp.id %}">
                     {% csrf_token %}
                     <button type="submit">Отклонить отклик</button>
                 </form>
+                </div>
                {% endif %}
+               <hr>
            </li>
            {% endfor %}
     {% else %}

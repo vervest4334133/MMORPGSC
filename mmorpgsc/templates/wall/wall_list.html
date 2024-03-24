@@ -17,7 +17,7 @@ MMORPGSC
 
 <hr>
 
-{% if perms.wall.wall_post_create %}
+{% if perms.wall.add_post %}
     <a href="{% url 'post_create' %}">Добавить пост.</a>
 {% endif %}
 
@@ -33,7 +33,7 @@ MMORPGSC
                    {{ post.get_category_display }}
                </small>
                {% if post.author == request.user %}
-                   {% if perms.wall.post_update or perms.wall.post_delete %}
+                   {% if perms.wall.change_post or perms.wall.delete_post %}
                        <a href="{% url 'post_update' post.id %}">Изменить пост.</a>
                        <a href="{% url 'post_delete' post.id %}">Удалить пост.</a>
                    {% endif %}

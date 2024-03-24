@@ -23,17 +23,18 @@ class ConfirmUser(UpdateView):
             user = User.objects.filter(code=request.POST['code'])
             if user.exists():
                 user.update(is_active=True)
+                new_user = User.objects.get(code=request.POST['code'])
                 user.update(code=None)
 
 
                 subject = 'Добро пожаловать на портал MMORPG Social Community!'
-                text = f'{user.username}, вы успешно зарегистрировались на сайте!'
+                text = f'{new_user.username}, вы успешно зарегистрировались на сайте!'
                 html = (
-                    f'<b>{user.username}</b>, вы успешно зарегистрировались на '
+                    f'<b>{new_user.username}</b>, вы успешно зарегистрировались на '
                     f'<a href="{settings.SITE_URL}">сайте</a>!'
                 )
                 msg = EmailMultiAlternatives(
-                    subject=subject, body=text, from_email=None, to=[user.email]
+                    subject=subject, body=text, from_email=None, to=[new_user.email]
                 )
                 msg.attach_alternative(html, "text/html")
                 msg.send()
