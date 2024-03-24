@@ -14,7 +14,7 @@ urlpatterns = [
    path('<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
    path('<int:pk>/reply/create', ReplyCreate.as_view(), name='reply_create'),
    path('posts_profile/', UserPostList.as_view(), name='user_posts'),
-   path('replies/', ReplyList.as_view(), name='replies_to_user'),
+   path('replies/', reply_list, name='replies_to_user'),
    path('replies/<int:reply_id>/reply_confirm/<str:action>/', reply_confirm, name='reply_confirm'),
 ]
 

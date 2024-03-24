@@ -1,18 +1,14 @@
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import models
 from django.urls import reverse_lazy
 
 from ckeditor.fields import RichTextField
 
-
-class ForumUser(models.Model):
-    f_user = models.OneToOneField(User, on_delete=models.CASCADE)
-    email = models.EmailField(unique=True, blank=True)
+from mmorpgsc import settings
 
 
 class Post(models.Model):
-    author = models.ForeignKey(ForumUser, on_delete=models.CASCADE, related_name='authors')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='author')
 
     TYPE = [
         ('Tanks', 'Танки'),
@@ -28,7 +24,7 @@ class Post(models.Model):
 
     category = models.CharField(max_length=16, choices=TYPE, verbose_name='Category')
     name = models.CharField(max_length=128, help_text='post_name')
-    content = RichTextField(config_name='awesome_ckeditor')
+    content = RichTextField(config_name='default')
     time_of_creation = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
 
@@ -48,7 +44,7 @@ class Post(models.Model):
 
 class Reply(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     reply_text = models.TextField()
     reply_date = models.DateTimeField(auto_now_add=True)
 

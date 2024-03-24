@@ -33,12 +33,12 @@ MMORPGSC
                    {{ post.get_category_display }}
                </small>
                {% if post.author == request.user %}
-                   {% if perms.wall.wall_post_update or perms.wall.wall_post_delete %}
-                       <a href="{% url 'post_update' wall_detailed.id %}">Изменить пост.</a>
-                       <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
+                   {% if perms.wall.post_update or perms.wall.post_delete %}
+                       <a href="{% url 'post_update' post.id %}">Изменить пост.</a>
+                       <a href="{% url 'post_delete' post.id %}">Удалить пост.</a>
                    {% endif %}
                {% endif %}
-               <p>{{ post.content|truncatewords:20 }}</p>
+               <p>{{ post.content|truncatewords:20|safe }}</p>
            </li>
            {% endfor %}
     {% else %}

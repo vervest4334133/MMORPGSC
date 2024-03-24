@@ -23,12 +23,3 @@ class PostFilter(django_filters.FilterSet):
             'time_of_creation': [],
             'category': ['exact'],
         }
-
-
-# class ReplyFilter(django_filters.FilterSet):
-#     class Meta:
-#         model = Post
-#         fields = {
-#             'name': ['icontains'],
-#             'category': ['exact'],
-#         }

@@ -1,0 +1,15 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% block content %}
+<title>Неверный код активации</title>
+    <div class="text-center mt-4 name" style="...">
+        <h3>Активация аккаунта</h3>
+    </div>
+    <h4 style="...">Неверный код активации</h4>
+    <form style="...">
+        {% csrf_token %}
+            <input type="button" onclick="history.back();"
+                   class="btn btn-outline-secondary btn-sm" value="Ввести код ещё раз"/>
+    </form>
+{% endblock %}

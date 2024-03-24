@@ -9,6 +9,7 @@ MMORPGSC
 
 <h1>MMORPG Social Community</h1>
 <h5>{{ time_now|date:'M d Y D' }}</h5>
+<h3>Ваши публикации</h3>
 
 <form action="" method="get">
        {{ filterset.form.as_p }}
@@ -27,17 +28,17 @@ MMORPGSC
            {% for user_post in user_posts %}
            <li class="list-group-item">
                <small class="fw-bold">{{ user_post.time_of_creation|date:'M d Y D H:i' }}</small>
-               <a href="{% url 'post_detail' post.id%}">{{ user_post.name }}</a>
+               <a href="{% url 'post_detail' user_post.id%}">{{ user_post.name }}</a>
                <small class="fw-bold">категория:
                    {{ user_post.get_category_display }}
                </small>
                {% if user_post.author == request.user %}
                    {% if perms.wall.wall_post_update or perms.wall.wall_post_delete %}
-                       <a href="{% url 'post_update' wall_detailed.id %}">Изменить пост.</a>
-                       <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
+                       <a href="{% url 'post_update' user_post.id %}">Изменить пост.</a>
+                       <a href="{% url 'post_delete' user_post.id %}">Удалить пост.</a>
                    {% endif %}
                {% endif %}
-               <p>{{ user_post.content|truncatewords:20 }}</p>
+               <p>{{ user_post.content|truncatewords:20|safe }}</p>
            </li>
            {% endfor %}
     {% else %}

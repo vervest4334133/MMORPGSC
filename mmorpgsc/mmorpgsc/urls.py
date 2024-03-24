@@ -32,10 +32,10 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('accounts/signup/', include('accounts.urls')),
     path('wall/', include('wall.urls')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
+    # path('ckeditor/', include('ckeditor_uploader.urls')),
     re_path(r'^upload/', login_required(upload), name='ckeditor_upload'),
     re_path(r'^browse/', login_required(never_cache(browse)), name='ckeditor_browse'),
-]
+] 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

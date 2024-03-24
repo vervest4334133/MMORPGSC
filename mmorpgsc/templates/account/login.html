@@ -3,7 +3,7 @@
 
 {% block content %}
 <a href="http://127.0.0.1:8000">Return to startpage.</a><br>
-<form method="post" action="{% url 'login' %}">
+<form method="post" action="">
 {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="login">

@@ -13,7 +13,7 @@ MMORPGSC
 
 <hr>
 
-    <form method="GET" action="{% url 'profile' %}">
+    <form method="GET" action="{% url 'user_posts' %}">
         <label for="post_id">Поиск по вашим публикациям:</label>
         <select name="post_id" id="post_id">
             <option value="">Все публикации</option>
@@ -34,7 +34,7 @@ MMORPGSC
     {% if replies %}
            {% for rp in replies %}
            <li class="list-group-item">
-               <p>На публикацию <a href="{% url 'post_detail' post.id%}">{{ rp.post.name }}</a> пришёл отклик!</p>
+               <p>На публикацию <a href="{% url 'post_detail' rp.post.id%}">{{ rp.post.name }}</a> пришёл отклик!</p>
                <small class="fw-bold">категория: {{ rp.post.get_category_display }} </small>
                <p>{{ rp.post.content|truncatewords:8 }}</p>
                <small class="fw-bold">{{ rp.reply_date|date:'M d Y D H:i' }}</small>

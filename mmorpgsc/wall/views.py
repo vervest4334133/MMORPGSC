@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.core.mail import EmailMultiAlternatives
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http import HttpResponse, HttpResponseBadRequest, request
 from django.template.loader import render_to_string
@@ -83,12 +83,14 @@ class PostCreate(PermissionRequiredMixin, CreateView):
     model = Post
     template_name = 'wall/wall_post_create.html'
 
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+        return super().form_valid(form)
+
     def get_success_url(self):
         return reverse_lazy('post_detail', kwargs={'pk': self.object.pk})
-
-    def form_valid(self, form):
-        form.save(commit=False)
-        return super().form_valid(form)
 
 
 class PostUpdate(PermissionRequiredMixin, UpdateView):
@@ -125,23 +127,39 @@ class UserPostList(ListView, LoginRequiredMixin):
         return Post.objects.filter(author=self.request.user)
 
 
-class ReplyList(ListView, LoginRequiredMixin):
-    model = Reply
-    ordering = '-reply_date'
-    template_name = 'wall/replies_to_user.html'
-    # context_object_name = 'replies'
-    paginate_by = 10
+@login_required
+def reply_list(request):
+    posts = Post.objects.filter(author=request.user)
+    replies = Reply.objects.filter(post__in=posts)
+    selected_post_id = request.GET.get('post_id')
+    if selected_post_id:
+        replies = replies.filter(post_id=selected_post_id)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        posts = Post.objects.filter(author=self.request.user)
-        replies_not_filtrated = Reply.objects.filter(post__in=posts)
-        selected_post_id = request.GET.get('post_id')
-        context['posts'] = Post.objects.filter(author=self.request.user)
-        if selected_post_id:
-            context['replies'] = replies_not_filtrated.filter(post_id=selected_post_id)
-
-        return context
+    return render(request, 'wall/replies_to_user.html', {'posts': posts, 'replies': replies})
+#
+#
+# class ReplyList(ListView, LoginRequiredMixin):
+#     model = Reply
+#     ordering = '-reply_date'
+#     template_name = 'wall/replies_to_user.html'
+#     # context_object_name = 'replies'
+#     paginate_by = 10
+#
+#     def selected_post(self, request):
+#         selected_post_id = request.GET.get('post_id')
+#
+#
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         posts = Post.objects.filter(author=self.request.user)
+#
+#         replies_not_filtrated = Reply.objects.filter(post__in=posts)
+#         context['posts'] = Post.objects.filter(author=self.request.user)
+#         if selected_post_id:
+#             context['replies'] = replies_not_filtrated.filter(post_id=selected_post_id)
+#
+#         return context
 
 
 @login_required

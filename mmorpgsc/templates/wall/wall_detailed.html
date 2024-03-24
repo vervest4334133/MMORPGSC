@@ -18,7 +18,7 @@ MMORPGSC
                        <a href="{% url 'post_delete' wall_detailed.id %}">Удалить пост.</a>
                    {% endif %}
                {% endif %}
-               <h2>{{wall_detailed.content}}</h2>
+               <h2>{{wall_detailed.content|safe}}</h2>
                <h6>{{ wall_detailed.time_of_creation|date:'M d Y D H:i' }}</h6>
 
                <hr>

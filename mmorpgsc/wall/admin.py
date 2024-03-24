@@ -8,12 +8,6 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ('name', 'category__name')
 
 
-class ForumUserAdmin(admin.ModelAdmin):
-    list_display = ('f_user', 'email')
-    list_filter = ('f_user', 'email')
-    search_fields = ('f_user', 'email')
-
-
 class ReplyAdmin(admin.ModelAdmin):
     list_display = ('reply_text', 'user', 'reply_date')
     list_filter = ('reply_text', 'user', 'reply_date')
@@ -21,5 +15,4 @@ class ReplyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Post, PostAdmin)
-admin.site.register(ForumUser, ForumUserAdmin)
 admin.site.register(Reply, ReplyAdmin)
