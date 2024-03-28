@@ -3,8 +3,8 @@ import random
 from string import hexdigits
 
 from allauth.account.forms import SignupForm
-from django.contrib.auth.models import Group
 
+from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 
 from mmorpgsc import settings

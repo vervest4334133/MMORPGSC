@@ -3,11 +3,13 @@ from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.http import HttpResponse, HttpResponseBadRequest, request
+from django.http import HttpResponse
 from django.template.loader import render_to_string
+
+from accounts.models import User
 
 from wall.filters import PostFilter
 from wall.forms import ReplyForm, PostForm
@@ -47,11 +49,24 @@ class ReplyCreate(CreateView, LoginRequiredMixin):
     model = Reply
     template_name = 'wall/wall_detailed.html'
 
-    def form_valid(self, form):
+    def form_valid(self, form): #валидация формы с добавлением оповещения автора поста о новом отклике
         reply = form.save(commit=False)
+        post = get_object_or_404(Post, id=self.kwargs['pk'])
         reply.user = self.request.user
+        reply.post = post
         reply.post_id = self.kwargs.get('pk')
         reply.save()
+        author = User.objects.get(pk=post.author_id)
+
+        html_content = render_to_string('notifications/new_reply_notification.html',
+                                        {'link': f'{settings.SITE_URL}/wall/{post.id}',
+                                         'text': f'Пользователь {reply.user} оставил отклик: {reply.reply_text}'})
+        msg = EmailMultiAlternatives(subject="Новый отклик на ваше объявление!", body='',
+                                     from_email=settings.DEFAULT_FROM_EMAIL,
+                                     to=[author.email])
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+
         return super().form_valid(form)
 
 
@@ -125,7 +140,14 @@ class UserPostList(ListView, LoginRequiredMixin):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.objects.filter(author=self.request.user)
+        queryset = Post.objects.filter(author=self.request.user)
+        self.filterset = PostFilter(self.request.GET, queryset)
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filterset'] = self.filterset
+        return context
 
 
 @login_required
@@ -137,39 +159,6 @@ def reply_list(request):
         replies = replies.filter(post_id=selected_post_id)
 
     return render(request, 'wall/replies_to_user.html', {'posts': posts, 'replies': replies})
-
-
-# @login_required
-# def reply_confirm(request, reply_id, action):
-#     reply = get_object_or_404(Reply, id=reply_id)
-#     if action == 'confirm':
-#         reply.confirm = 'confirmed'
-#         subject = 'Ваш отклик принят автором объявления.'
-#         message = f'Ваш отклик на объявление "{reply.post.name}" принят!'
-#         html = (
-#             f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" принят!'
-#             f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
-#         )
-#     elif action == 'cancel':
-#         reply.status = 'cancelled'
-#         subject = 'Ваш отклик отклонен автором объявления.'
-#         message = f'Ваш отклик на объявление "{reply.post.name}" отклонен!'
-#         html = (
-#             f'<b>{request.user.username}</b>, Ваш отклик на объявление "{reply.post.name}" отклонен!'
-#             f'<a href="http://127.0.0.1:8000/wall/{reply.post_id}">Просмотреть объявление.</a>!'
-#         )
-#     else:
-#         return HttpResponseBadRequest('Неправильный запрос!')
-#
-#     reply.save()
-#
-#     msg = EmailMultiAlternatives(
-#         subject=subject, body=message, from_email=None, to=[request.user.email]
-#     )
-#     msg.attach_alternative(html, "text/html")
-#     msg.send()
-#
-#     return redirect('post', post_id=reply.post.id)
 
 
 @login_required
@@ -187,14 +176,6 @@ def confirm_reply(request, reply_id):
     reply.confirm = 'confirmed'
     reply.save()
 
-    # subject = f'Ваш запрос принят'
-    # message = f'Ваш запрос на объявление "{reply.post.name}" был принят.'
-    # from_email = settings.DEFAULT_FROM_EMAIL
-    # recipient_list = [reply.author.email]
-    #
-    # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-    #
-    # messages.success(request, 'Запрос успешно принят.')
     subject = 'Ваш отклик принят автором объявления.'
     message = f'Ваш отклик на объявление "{reply.post.name}" принят!'
     html = (
@@ -225,14 +206,6 @@ def cancel_reply(request, reply_id):
     reply.confirm = 'cancelled'
     reply.save()
 
-    # subject = f'Ваш запрос отклонен'
-    # message = f'Ваш запрос на объявление "{reply.post.name}" был отклонен.'
-    # from_email = settings.DEFAULT_FROM_EMAIL
-    # recipient_list = [reply.author.email]
-    #
-    # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-    #
-    # messages.success(request, 'Запрос успешно отклонен.')
     subject = 'Ваш отклик отклонен автором объявления.'
     message = f'Ваш отклик на объявление "{reply.post.name}" отклонен!'
     html = (

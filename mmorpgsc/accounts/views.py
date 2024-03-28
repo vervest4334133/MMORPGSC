@@ -26,7 +26,6 @@ class ConfirmUser(UpdateView):
                 new_user = User.objects.get(code=request.POST['code'])
                 user.update(code=None)
 
-
                 subject = 'Добро пожаловать на портал MMORPG Social Community!'
                 text = f'{new_user.username}, вы успешно зарегистрировались на сайте!'
                 html = (
@@ -43,11 +42,6 @@ class ConfirmUser(UpdateView):
                 return render(self.request, 'account/invalid_code.html')
 
         return redirect('/accounts/login')
-
-
-# @login_required
-# class PersonalRoom(UpdateView):
-#     template_name = "account/personal_room.html"
 
 
 @login_required

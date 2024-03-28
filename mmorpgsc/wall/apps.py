@@ -6,5 +6,4 @@ class WallConfig(AppConfig):
     name = 'wall'
 
     def ready(self):
-        pass
-#        from . import signals  # выполнение модуля -> регистрация сигналов
+        from . import signals

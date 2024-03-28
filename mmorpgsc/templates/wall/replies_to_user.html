@@ -13,7 +13,7 @@ MMORPGSC
 
 <hr>
 
-    <form method="GET" action="{% url 'user_posts' %}">
+    <form method="GET" action="{% url 'replies_to_user' %}">
         <label for="post_id">Поиск по вашим публикациям:</label>
         <select name="post_id" id="post_id">
             <option value="">Все публикации</option>
@@ -21,7 +21,7 @@ MMORPGSC
                 <option value="{{ post.id }}"
                         {% if post.id == request.GET.post_id %} selected {% endif %}> {{ post.name }}
                 </option>
-                <p>Публикация: {{ response.post.name }}</p>
+                <p><b>Публикация: {{ response.post.name }}</b></p>
             {% endfor %}
 
         </select>

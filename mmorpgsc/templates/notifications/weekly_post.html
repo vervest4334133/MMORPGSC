@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>MMORPGSC</title>
 </head>
 <body>
-<h2>Привет от NewsPaper Project! Новые публикации за последнюю неделю из ваших подписок!</h2>
+<h2>Привет от MMORPGSC! Новые публикации за последнюю неделю на нашем сайте!</h2>
 <ul>
     {% for post in posts %}
-    <li><a href="{{ link }}{{ post.get_absolute_url }}">{{ post.post_name }}</a></li>
+    <li><a href="{{ link }}{{ post.get_absolute_url }}">{{ post.name }}</a></li>
     {% endfor %}
 </ul>
 </body>
